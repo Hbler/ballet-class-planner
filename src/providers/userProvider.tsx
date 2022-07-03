@@ -36,7 +36,7 @@ export default function UserProvider({ children }: Props) {
 
     API.get("classes")
       .then((_) => setToken(currentToken))
-      .catch((err) => console.log(err));
+      .catch((_) => setToken(""));
   }, []);
 
   const login = (email: string, password: string) => {
@@ -47,6 +47,10 @@ export default function UserProvider({ children }: Props) {
 
         setUser({ ...res.data.user });
         setClasses(user.classes);
+        setTimeout(() => {
+          localStorage.removeItem("@BCPlanner:token");
+          setToken("");
+        }, 3.6e6);
       })
       .catch((err) => console.log(err));
   };
