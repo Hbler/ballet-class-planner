@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "ballet-class-planner.herokuapp.com/",
-  timeout: 1500,
+  baseURL: "https://ballet-class-planner.herokuapp.com/",
+  timeout: 15000,
 });
 
 export default API;
