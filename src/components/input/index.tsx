@@ -1,4 +1,5 @@
 import { InputHTMLAttributes } from "react";
+import { InputContainer } from "./style";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
@@ -17,8 +18,8 @@ export default function Input({
   ...rest
 }: InputProps) {
   return (
-    <div>
-      <label htmlFor={name}>{label}</label>
+    <InputContainer>
+      {!!label && <label htmlFor={name}>{label}</label>}
       <input
         name={name}
         id={name}
@@ -26,7 +27,7 @@ export default function Input({
         {...register(name)}
         {...rest}
       />
-      <small>{errors}</small>
-    </div>
+      {!!errors && <small>{errors}</small>}
+    </InputContainer>
   );
 }

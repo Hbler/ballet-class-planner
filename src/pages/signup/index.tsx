@@ -1,10 +1,15 @@
-import * as yup from "yup";
-import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import * as yup from "yup";
 
+import Btn from "../../components/buttons";
+import { AccessForm } from "../../components/form";
+import Header from "../../components/header";
 import Input from "../../components/input";
-import { ContextUser } from "../../providers/userProvider";
 import Select from "../../components/select";
+import { ContextUser } from "../../providers/userProvider";
+import { AccessMain } from "../../styles/global";
 
 type FormData = {
   name: string;
@@ -68,43 +73,58 @@ export default function SignUp() {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          name="name"
-          placeholder="Nome"
-          type="text"
-          register={register}
-          errors={errors?.name?.message}
-        />
-        <Input
-          name="email"
-          placeholder="Email"
-          type="email"
-          register={register}
-          errors={errors?.email?.message}
-        />
-        <Input
-          name="password"
-          placeholder="Senha"
-          type="password"
-          register={register}
-          errors={errors?.password?.message}
-        />
-        <Input
-          name="confirmPassword"
-          placeholder="Confirmar Senha"
-          type="password"
-          register={register}
-          errors={errors?.confirmPassword?.message}
-        />
-        <Select
-          name="type"
-          options={["Professor(a)", "Aluno(a)"]}
-          register={register}
-          errors={errors?.type?.message}
-        />
-        <button type="submit">Entrar</button>
-      </form>
+      <Header />
+      <AccessMain>
+        <div className="container">
+          <div>
+            <h2>Cadastro</h2>
+            <p>
+              Preencha o formulário para criar sua conta e acessar o planner!
+            </p>
+          </div>
+          <AccessForm onSubmit={handleSubmit(onSubmit)}>
+            <Input
+              name="name"
+              placeholder="Nome"
+              type="text"
+              register={register}
+              errors={errors?.name?.message}
+            />
+            <Input
+              name="email"
+              placeholder="Email"
+              type="email"
+              register={register}
+              errors={errors?.email?.message}
+            />
+            <Input
+              name="password"
+              placeholder="Senha"
+              type="password"
+              register={register}
+              errors={errors?.password?.message}
+            />
+            <Input
+              name="confirmPassword"
+              placeholder="Confirmar Senha"
+              type="password"
+              register={register}
+              errors={errors?.confirmPassword?.message}
+            />
+            <Select
+              name="type"
+              label="Escolha o tipo de conta:"
+              options={["Professor(a)", "Aluno(a)"]}
+              register={register}
+              errors={errors?.type?.message}
+            />
+            <Btn type="submit">Cadastrar</Btn>
+            <p>
+              <Link to="/">Já tenho uma conta </Link>
+            </p>
+          </AccessForm>
+        </div>
+      </AccessMain>
     </>
   );
 }

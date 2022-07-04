@@ -1,4 +1,5 @@
 import { SelectHTMLAttributes } from "react";
+import { SelectContainer } from "./style";
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   name: string;
@@ -17,8 +18,8 @@ export default function Select({
   ...rest
 }: SelectProps) {
   return (
-    <div>
-      <label htmlFor={name}>{label}</label>
+    <SelectContainer>
+      {!!label && <label htmlFor={name}>{label}</label>}
       <select name={name} id={name} {...register(name)} {...rest}>
         {options.map((value) => (
           <option
@@ -29,7 +30,7 @@ export default function Select({
           </option>
         ))}
       </select>
-      <small>{errors}</small>
-    </div>
+      {!!errors && <small>{errors}</small>}
+    </SelectContainer>
   );
 }

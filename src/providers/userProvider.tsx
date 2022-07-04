@@ -9,7 +9,7 @@ import Class from "../models/Class";
 import { Student, Teacher } from "../models/User";
 import API from "../services/API";
 
-type Props = { children: ReactNode };
+type UserProviderProps = { children: ReactNode };
 type User = Teacher | Student;
 
 interface newUser {
@@ -34,7 +34,7 @@ export const ContextUser = () => {
   return context;
 };
 
-export default function UserProvider({ children }: Props) {
+export default function UserProvider({ children }: UserProviderProps) {
   const [token, setToken] = useState("");
   const [user, setUser] = useState({} as User);
   const [classes, setClasses] = useState([] as Class[]);

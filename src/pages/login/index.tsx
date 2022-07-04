@@ -1,9 +1,14 @@
-import * as yup from "yup";
-import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import * as yup from "yup";
 
+import Btn from "../../components/buttons";
+import { AccessForm } from "../../components/form";
+import Header from "../../components/header";
 import Input from "../../components/input";
 import { ContextUser } from "../../providers/userProvider";
+import { AccessMain } from "../../styles/global";
 
 type FormData = {
   email: string;
@@ -34,23 +39,45 @@ export default function Login() {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          name="email"
-          placeholder="email"
-          type="email"
-          register={register}
-          errors={errors?.email?.message}
-        />
-        <Input
-          name="password"
-          placeholder="senha"
-          type="password"
-          register={register}
-          errors={errors?.password?.message}
-        />
-        <button type="submit">Entrar</button>
-      </form>
+      <Header />
+      <AccessMain>
+        <div className="container">
+          <div>
+            <h2>Login</h2>
+            <p>
+              Para a professora ou professor o jeito mais fácil de planejar
+              aulas. Crie aulas com diversos exercícios, exercícios com diversas
+              sequencias, e sequencias com detalhes e música recomendada.
+            </p>
+            <p>
+              Para as alunas e alunos o jeito mais fácil de se preparar para as
+              aulas, saiba quais são os exercícios da sua próxima aula e o que
+              você vai precisar fazer em cada um.
+            </p>
+          </div>
+          <AccessForm onSubmit={handleSubmit(onSubmit)}>
+            <Input
+              name="email"
+              placeholder="Digite seu email"
+              type="email"
+              register={register}
+              errors={errors?.email?.message}
+            />
+            <Input
+              name="password"
+              placeholder="Digite sua senha"
+              type="password"
+              register={register}
+              errors={errors?.password?.message}
+            />
+            <Btn type="submit">Entrar</Btn>
+            <p>
+              Ainda não tem uma conta? <wbr />
+              <Link to="/signup">Cadastre-se</Link>
+            </p>
+          </AccessForm>
+        </div>
+      </AccessMain>
     </>
   );
 }
