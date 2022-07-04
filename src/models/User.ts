@@ -65,15 +65,21 @@ export class Teacher extends User {
   }
 
   updateClasses(): void {
+    const auth = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("@BCPlanner:token")}`,
+      },
+    };
+
     this.classes.splice(0, this.classes.length);
 
-    API.get(`users/${this.id}/classes`)
-      .then((res) =>
-        res.data.foEach((cl: Class) => {
+    API.get(`users/${this.id}/classes`, auth)
+      .then((res) => {
+        res.data.forEach((cl: Class) => {
           const aClass = new Class(cl.name, cl.userId, cl.id);
           this.classes.push(aClass);
-        })
-      )
+        });
+      })
       .catch((err) => console.log(err));
   }
 }
@@ -107,12 +113,18 @@ export class Student extends User {
   }
 
   updateClasses(): void {
+    const auth = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("@BCPlanner:token")}`,
+      },
+    };
+
     this.classes.splice(0, this.classes.length);
 
     this.teachers.forEach((teacher) => {
-      API.get(`users/${teacher}/classes`)
+      API.get(`users/${teacher}/classes`, auth)
         .then((res) =>
-          res.data.foEach((cl: Class) => {
+          res.data.forEach((cl: Class) => {
             const aClass = new Class(cl.name, cl.userId, cl.id);
             this.classes.push(aClass);
           })

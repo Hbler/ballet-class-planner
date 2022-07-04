@@ -9,7 +9,8 @@ export const GlobalStyle = createGlobalStyle<{ theme: Theme }>`
     --toastify-color-light: ${({ theme: { colors } }) => colors.bg};
     --toastify-color-success: ${({ theme: { colors } }) => colors.success};
     --toastify-color-error: ${({ theme: { colors } }) => colors.error};
-    --toastify-text-color-light: ${({ theme: { colors } }) => colors.text};
+    --toastify-text-color-light: ${({ theme: { colors } }) =>
+      colors.secondaryText};
 }
 
 *{

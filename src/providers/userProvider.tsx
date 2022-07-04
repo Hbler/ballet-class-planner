@@ -1,10 +1,14 @@
 import {
   createContext,
+  Dispatch,
   ReactNode,
+  SetStateAction,
   useContext,
   useEffect,
   useState,
 } from "react";
+
+import { errorToast, successToast } from "../components/toasts";
 import Class from "../models/Class";
 import { Student, Teacher } from "../models/User";
 import API from "../services/API";
@@ -22,12 +26,16 @@ interface newUser {
 interface UserProviderData {
   token: string;
   user: User;
+  setUser: Dispatch<SetStateAction<User>>;
   classes: Class[];
   login: (email: string, password: string) => void;
   signUp: (newUser: newUser) => void;
+  checkLocalUser: (savedUser: string) => void;
 }
 
-const UserContext = createContext<UserProviderData>({} as UserProviderData);
+export const UserContext = createContext<UserProviderData>(
+  {} as UserProviderData
+);
 
 export const ContextUser = () => {
   const context = useContext(UserContext);
@@ -40,58 +48,108 @@ export default function UserProvider({ children }: UserProviderProps) {
   const [classes, setClasses] = useState([] as Class[]);
 
   useEffect(() => {
-    const currentToken = localStorage.getItem("@BCPlanner:token") || "";
+    const savedToken = localStorage.getItem("@BCPlanner:token") || "";
+    const savedUser = localStorage.getItem("@BCPlanner:user") || "";
 
-    if (currentToken) {
+    if (savedToken) {
       const auth = {
         headers: {
-          Authorization: `Bearer ${currentToken}`,
+          Authorization: `Bearer ${savedToken}`,
         },
       };
 
       API.get("classes/", auth)
-        .then((_) => setToken(currentToken))
+        .then((_) => setToken(savedToken))
         .catch((err) => {
           setToken("");
           console.log(err);
         });
     }
-  }, []);
+
+    if (savedUser && Object.keys(user).length === 0) checkLocalUser(savedUser);
+  }, [user]);
 
   const login = (email: string, password: string) => {
     API.post("login", { email, password })
       .then((res) => {
         setToken(res.data.accessToken);
         localStorage.setItem("@BCPlanner:token", res.data.accessToken);
+        const loggedUser = res.data.user;
+        const currentUser =
+          loggedUser.type === "teacher"
+            ? new Teacher(
+                loggedUser.email,
+                loggedUser.name,
+                loggedUser.type,
+                loggedUser.id
+              )
+            : new Student(
+                loggedUser.email,
+                loggedUser.name,
+                loggedUser.type,
+                loggedUser.id
+              );
 
-        setUser({ ...res.data.user });
-        user.updateClasses();
-        setClasses(user.classes);
+        localStorage.setItem("@BCPlanner:user", JSON.stringify(currentUser));
+        currentUser.updateClasses();
+        setClasses([...currentUser.classes]);
+
         setTimeout(() => {
           localStorage.removeItem("@BCPlanner:token");
+          localStorage.removeItem("@BCPlanner:user");
           setToken("");
         }, 3.6e6);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        let message;
+
+        err.response.data.includes("password")
+          ? (message = "Ops! Senha incorreta")
+          : err.response.data.includes("find")
+          ? (message = "Email não encontrado")
+          : (message = "Ops! Ocorreu um erro!");
+
+        errorToast(message);
+      });
   };
 
   const signUp = (newUser: newUser) => {
-    console.log(newUser);
-
     API.post("register", newUser)
-      .then((res) => {
-        setToken(res.data.accessToken);
-        localStorage.setItem("@BCPlanner:token", res.data.accessToken);
-
-        setUser({ ...res.data.user });
-        user.updateClasses();
-        setClasses(user.classes);
-        setTimeout(() => {
-          localStorage.removeItem("@BCPlanner:token");
-          setToken("");
-        }, 3.6e6);
+      .then((_) => {
+        localStorage.setItem("@BCPlanner:registered", "true");
+        successToast("O cadastro foi realizado com sucesso!");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        let message;
+
+        err.response.data.includes("Email")
+          ? (message = "Esse email já está cadastrado")
+          : (message = "Ops! Ocorreu um erro!");
+
+        errorToast(message);
+      });
+  };
+
+  const checkLocalUser = (savedUser: string) => {
+    if (savedUser) {
+      const currentUser = JSON.parse(savedUser);
+      const userInstance =
+        currentUser.type === "teacher"
+          ? new Teacher(
+              currentUser.email,
+              currentUser.name,
+              currentUser.type,
+              currentUser.id
+            )
+          : new Student(
+              currentUser.email,
+              currentUser.name,
+              currentUser.type,
+              currentUser.id
+            );
+
+      setUser(userInstance);
+    }
   };
 
   return (
@@ -99,9 +157,11 @@ export default function UserProvider({ children }: UserProviderProps) {
       value={{
         token,
         user,
+        setUser,
         classes,
         login,
         signUp,
+        checkLocalUser,
       }}
     >
       {children}
