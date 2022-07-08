@@ -1,4 +1,3 @@
-import API from "../services/API";
 import Sequence from "./Sequence";
 
 export default class Exercise {
@@ -23,52 +22,8 @@ export default class Exercise {
     artist?: string,
     url?: string
   ): void {
-    const auth = {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("@BCPlanner:token")}`,
-      },
-    };
+    const newSequence = new Sequence(sequence, musicName, album, artist, url);
 
-    const newSequence = {
-      sequence,
-      userId: this.userId,
-      classId: this.classId,
-      exerciseId: this.id,
-      music: {
-        name: musicName,
-        album,
-        artist,
-        url,
-      },
-    };
-
-    API.post("sequences", newSequence, auth)
-      .then((res) => console.log(res))
-      .catch((err) => console.log(err));
-
-    this.updateSequences();
-  }
-
-  updateSequences(): void {
-    this.sequences.splice(0, this.sequences.length);
-
-    API.get(`exercises/${this.id}/sequencees`)
-      .then((res) =>
-        res.data.foEach((sq: Sequence) => {
-          const sequence = new Sequence(
-            sq.sequence,
-            sq.userId,
-            sq.classId,
-            sq.exerciseId,
-            sq.id,
-            sq.music?.name,
-            sq.music?.album,
-            sq.music?.artist,
-            sq.music?.url
-          );
-          this.sequences.push(sequence);
-        })
-      )
-      .catch((err) => console.log(err));
+    this.sequences.push(newSequence);
   }
 }

@@ -20,12 +20,18 @@ class User {
 export class Teacher extends User {
   students: number[];
 
-  constructor(email: string, name: string, type: string, id?: number) {
+  constructor(
+    email: string,
+    name: string,
+    type: string,
+    id?: number,
+    students?: number[]
+  ) {
     super(email, name, type, id);
-    this.students = [];
+    this.students = students ? [...students] : [];
   }
 
-  addStudent(userId: number): void {
+  addStudent(studentId: number): void {
     const auth = {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("@BCPlanner:token")}`,
@@ -36,11 +42,11 @@ export class Teacher extends User {
       (res) => (this.students = [...res.data?.students])
     );
 
-    this.students.push(userId);
+    this.students.push(studentId);
 
-    const students = { students: this.students };
+    const update = { students: this.students };
 
-    API.patch(`users/${this.id}`, students, auth)
+    API.patch(`users/${this.id}`, update, auth)
       .then((res) => console.log(res))
       .catch((err) => console.log(err));
   }
@@ -87,9 +93,15 @@ export class Teacher extends User {
 export class Student extends User {
   teachers: number[];
 
-  constructor(email: string, name: string, type: string, id?: number) {
+  constructor(
+    email: string,
+    name: string,
+    type: string,
+    id?: number,
+    teachers?: number[]
+  ) {
     super(email, name, type, id);
-    this.teachers = [];
+    this.teachers = teachers ? [...teachers] : [];
   }
 
   addTeacher(userId: number): void {
@@ -105,9 +117,9 @@ export class Student extends User {
 
     this.teachers.push(userId);
 
-    const teachers = { teachers: this.teachers };
+    const update = { teachers: this.teachers };
 
-    API.patch(`users/${this.id}`, teachers, auth)
+    API.patch(`users/${this.id}`, update, auth)
       .then((res) => console.log(res))
       .catch((err) => console.log(err));
   }

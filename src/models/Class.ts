@@ -1,5 +1,6 @@
 import API from "../services/API";
 import Exercise from "./Exercise";
+import Sequence from "./Sequence";
 
 export default class Class {
   id?: number;
@@ -14,7 +15,7 @@ export default class Class {
     this.exercises = [];
   }
 
-  addExercise(name: string): void {
+  addExercise(name: string, sequences?: Sequence[]): void {
     const auth = {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("@BCPlanner:token")}`,
@@ -25,6 +26,7 @@ export default class Class {
       name,
       classId: this.id,
       userId: this.userId,
+      sequences: sequences ? [...sequences] : [],
     };
 
     API.post("exercises", newExercise, auth)
