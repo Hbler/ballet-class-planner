@@ -8,10 +8,11 @@ import {
   useState,
 } from "react";
 
-import { errorToast, successToast } from "../components/toasts";
 import Class from "../models/Class";
-import { Student, Teacher } from "../models/User";
 import API from "../services/API";
+
+import { errorToast, successToast } from "../components/toasts";
+import { Student, Teacher } from "../models/User";
 
 type UserProviderProps = { children: ReactNode };
 type User = Teacher | Student;
@@ -23,13 +24,18 @@ interface newUser {
   type: string;
   [k: string]: any;
 }
+
 interface UserProviderData {
   token: string;
   user: User;
   setUser: Dispatch<SetStateAction<User>>;
   classes: Class[];
-  login: (email: string, password: string) => void;
-  signUp: (newUser: newUser) => void;
+  login: (
+    email: string,
+    password: string,
+    callback: (route: string) => void
+  ) => void;
+  signUp: (newUser: newUser, callback: (route: string) => void) => void;
   checkLocalUser: (savedUser: string) => void;
 }
 
@@ -47,31 +53,15 @@ export default function UserProvider({ children }: UserProviderProps) {
   const [user, setUser] = useState({} as User);
   const [classes, setClasses] = useState([] as Class[]);
 
-  useEffect(() => {
-    const savedToken = localStorage.getItem("@BCPlanner:token") || "";
-    const savedUser = localStorage.getItem("@BCPlanner:user") || "";
-
-    if (savedToken) {
-      const auth = {
-        headers: {
-          Authorization: `Bearer ${savedToken}`,
-        },
-      };
-
-      API.get("classes/", auth)
-        .then((_) => setToken(savedToken))
-        .catch((err) => {
-          setToken("");
-          console.log(err);
-        });
-    }
-
-    if (savedUser && Object.keys(user).length === 0) checkLocalUser(savedUser);
-  }, [user]);
-
-  const login = (email: string, password: string) => {
+  const login = (
+    email: string,
+    password: string,
+    callback: (route: string) => void
+  ) => {
     API.post("login", { email, password })
       .then((res) => {
+        console.log(res);
+
         setToken(res.data.accessToken);
         localStorage.setItem("@BCPlanner:token", res.data.accessToken);
         const loggedUser = res.data.user;
@@ -99,6 +89,8 @@ export default function UserProvider({ children }: UserProviderProps) {
           localStorage.removeItem("@BCPlanner:user");
           setToken("");
         }, 3.6e6);
+
+        callback("/");
       })
       .catch((err) => {
         let message;
@@ -113,15 +105,44 @@ export default function UserProvider({ children }: UserProviderProps) {
       });
   };
 
-  const signUp = (newUser: newUser) => {
-    API.post("register", newUser)
+  const createProfile = (data: any, callback: (route: string) => void) => {
+    const { accessToken, user } = data;
+    const { name, id, type } = user;
+
+    const route = type === "teacher" ? "teachers" : "students";
+
+    const auth = {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+
+    const profile = {
+      name,
+      userId: id,
+      classes: [],
+    };
+
+    API.post(route, profile, auth)
       .then((_) => {
-        localStorage.setItem("@BCPlanner:registered", "true");
         successToast("O cadastro foi realizado com sucesso!");
+        callback("/");
       })
       .catch((err) => {
-        let message;
+        console.log(err);
+        errorToast("Ops! Ocorreu um erro...");
+      });
+  };
 
+  const signUp = (newUser: newUser, callback: (route: string) => void) => {
+    API.post("register", newUser)
+      .then((res) => {
+        createProfile(res.data, callback);
+      })
+      .catch((err) => {
+        console.log(err);
+
+        let message;
         err.response.data.includes("Email")
           ? (message = "Esse email já está cadastrado")
           : (message = "Ops! Ocorreu um erro!");
@@ -151,6 +172,28 @@ export default function UserProvider({ children }: UserProviderProps) {
       setUser(userInstance);
     }
   };
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem("@BCPlanner:token") || "";
+    const savedUser = localStorage.getItem("@BCPlanner:user") || "";
+
+    if (savedToken) {
+      const auth = {
+        headers: {
+          Authorization: `Bearer ${savedToken}`,
+        },
+      };
+
+      API.get("classes/", auth)
+        .then((_) => setToken(savedToken))
+        .catch((err) => {
+          setToken("");
+          console.log(err);
+        });
+    }
+
+    if (savedUser && Object.keys(user).length === 0) checkLocalUser(savedUser);
+  }, [user]);
 
   return (
     <UserContext.Provider

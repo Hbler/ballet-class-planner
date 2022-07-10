@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 import Btn from "../../components/buttons";
@@ -16,6 +16,7 @@ type FormData = {
 };
 
 export default function Login() {
+  const navigate = useNavigate();
   const { login } = ContextUser();
 
   const formSchema = yup.object().shape({
@@ -34,7 +35,7 @@ export default function Login() {
 
   const onSubmit = (data: FormData) => {
     const { email, password } = data;
-    login(email, password);
+    login(email, password, navigate);
   };
 
   return (

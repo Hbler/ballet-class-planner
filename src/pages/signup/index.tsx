@@ -1,15 +1,15 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
-import { useNavigate } from "react-router-dom";
 
 import Btn from "../../components/buttons";
-import { AccessForm } from "../../components/form";
 import Header from "../../components/header";
 import Input from "../../components/input";
 import Select from "../../components/select";
+
+import { AccessForm } from "../../components/form";
 import { UserContext } from "../../providers/userProvider";
 import { AccessMain } from "../../styles/global";
 
@@ -31,23 +31,7 @@ interface newUser {
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const [registered, setRegistered] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (registered) {
-      localStorage.removeItem("@BCPlanner:registered");
-      navigate("/");
-    }
-  }, [navigate, registered]);
-
   const { signUp } = useContext(UserContext);
-
-  const checkRegister = () => {
-    const isRegistered = localStorage.getItem("@BCPlanner:registered");
-    console.log(isRegistered);
-
-    isRegistered && setRegistered(true);
-  };
 
   const formSchema = yup.object().shape({
     name: yup.string().required("Ops! Faltou seu nome"),
@@ -87,8 +71,7 @@ export default function SignUp() {
 
     type === "teacher" ? (user.students = []) : (user.teachers = []);
 
-    signUp(user);
-    checkRegister();
+    signUp(user, navigate);
   };
 
   return (
