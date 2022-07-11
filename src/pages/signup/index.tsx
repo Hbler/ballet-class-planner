@@ -7,9 +7,9 @@ import * as yup from "yup";
 import Btn from "../../components/buttons";
 import Header from "../../components/header";
 import Input from "../../components/input";
-import Select from "../../components/select";
 
 import { AccessForm } from "../../components/form";
+import { Select } from "../../components/select";
 import { UserContext } from "../../providers/userProvider";
 import { AccessMain } from "../../styles/global";
 

@@ -29,12 +29,14 @@ interface UserProviderData {
   token: string;
   user: User;
   setUser: Dispatch<SetStateAction<User>>;
+  setClasses: Dispatch<SetStateAction<Class[]>>;
   classes: Class[];
   login: (
     email: string,
     password: string,
     callback: (route: string) => void
   ) => void;
+  logOut: (callback: (route: string) => void) => void;
   signUp: (newUser: newUser, callback: (route: string) => void) => void;
   checkLocalUser: (savedUser: string) => void;
 }
@@ -60,8 +62,6 @@ export default function UserProvider({ children }: UserProviderProps) {
   ) => {
     API.post("login", { email, password })
       .then((res) => {
-        console.log(res);
-
         setToken(res.data.accessToken);
         localStorage.setItem("@BCPlanner:token", res.data.accessToken);
         const loggedUser = res.data.user;
@@ -82,7 +82,6 @@ export default function UserProvider({ children }: UserProviderProps) {
 
         localStorage.setItem("@BCPlanner:user", JSON.stringify(currentUser));
         currentUser.updateClasses();
-        setClasses([...currentUser.classes]);
 
         setTimeout(() => {
           localStorage.removeItem("@BCPlanner:token");
@@ -90,10 +89,12 @@ export default function UserProvider({ children }: UserProviderProps) {
           setToken("");
         }, 3.6e6);
 
-        callback("/");
+        setUser(currentUser);
+        callback("/home");
       })
       .catch((err) => {
         let message;
+        console.log(err);
 
         err.response.data.includes("password")
           ? (message = "Ops! Senha incorreta")
@@ -103,6 +104,13 @@ export default function UserProvider({ children }: UserProviderProps) {
 
         errorToast(message);
       });
+  };
+
+  const logOut = (callback: (route: string) => void) => {
+    localStorage.removeItem("@BCPlanner:token");
+    localStorage.removeItem("@BCPlanner:user");
+    setToken("");
+    callback("/");
   };
 
   const createProfile = (data: any, callback: (route: string) => void) => {
@@ -173,23 +181,50 @@ export default function UserProvider({ children }: UserProviderProps) {
     }
   };
 
+  // const parseJwt = (token: string) => {
+  //   console.log(decode.exp);
+  //   if (decode.exp * 1000 < new Date().getTime()) {
+  //     console.log("Time Expired");
+  //   }
+  // };
+
   useEffect(() => {
     const savedToken = localStorage.getItem("@BCPlanner:token") || "";
     const savedUser = localStorage.getItem("@BCPlanner:user") || "";
 
     if (savedToken) {
-      const auth = {
-        headers: {
-          Authorization: `Bearer ${savedToken}`,
-        },
-      };
+      //parse jwt
+      const decode = JSON.parse(atob(savedToken.split(".")[1]));
 
-      API.get("classes/", auth)
-        .then((_) => setToken(savedToken))
-        .catch((err) => {
-          setToken("");
-          console.log(err);
-        });
+      // verify token expiration
+      if (!(decode.exp * 1000 < new Date().getTime())) {
+        const auth = {
+          headers: {
+            Authorization: `Bearer ${savedToken}`,
+          },
+        };
+
+        API.get(`users/${decode.sub}/classes`, auth)
+          .then((res) => {
+            const classList: Class[] = [];
+            res.data.forEach((cl: Class) => {
+              const aClass = new Class(cl.name, cl.userId, cl.id);
+
+              aClass.updateExercises();
+              classList.push(aClass);
+            });
+            setClasses([...classList]);
+            setToken(savedToken);
+          })
+          .catch((err) => {
+            setToken("");
+
+            console.log(err);
+          });
+      } else {
+        localStorage.clear();
+        errorToast("Sua sessão expirou...");
+      }
     }
 
     if (savedUser && Object.keys(user).length === 0) checkLocalUser(savedUser);
@@ -201,8 +236,10 @@ export default function UserProvider({ children }: UserProviderProps) {
         token,
         user,
         setUser,
+        setClasses,
         classes,
         login,
+        logOut,
         signUp,
         checkLocalUser,
       }}

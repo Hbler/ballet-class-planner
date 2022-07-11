@@ -11,5 +11,19 @@ export const StyledHeader = styled.header`
     display: flex;
     align-items: center;
     justify-content: center;
+
+    position: relative;
+
+    svg {
+      right: 5rem;
+
+      font-size: 2rem;
+      position: absolute;
+
+      :hover {
+        cursor: pointer;
+        color: ${({ theme: { colors } }) => colors.highlight};
+      }
+    }
   }
 `;

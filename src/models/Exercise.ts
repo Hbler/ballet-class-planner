@@ -1,3 +1,5 @@
+import { successToast } from "../components/toasts";
+import API from "../services/API";
 import Sequence from "./Sequence";
 
 export default class Exercise {
@@ -25,5 +27,18 @@ export default class Exercise {
     const newSequence = new Sequence(sequence, musicName, album, artist, url);
 
     this.sequences.push(newSequence);
+
+    const auth = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("@BCPlanner:token")}`,
+      },
+    };
+
+    API.patch(`exercises/${this.id}`, this.sequences, auth)
+      .then((res) => {
+        console.log(res);
+        successToast("Sequencia adicionada!");
+      })
+      .catch((err) => console.log(err));
   }
 }

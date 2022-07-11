@@ -1,3 +1,4 @@
+import { errorToast, successToast } from "../components/toasts";
 import API from "../services/API";
 import Class from "./Class";
 
@@ -14,6 +15,23 @@ class User {
     this.name = name;
     this.type = type;
     this.classes = [];
+    type === "teacher"
+      ? Object.setPrototypeOf(this, Teacher.prototype)
+      : Object.setPrototypeOf(this, Student.prototype);
+  }
+
+  updateProfile() {
+    const auth = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("@BCPlanner:token")}`,
+      },
+    };
+
+    const currentList = this.classes.map((cl) => cl.id);
+
+    API.patch(this.type + `s/${this.id}`, currentList, auth).catch((err) =>
+      console.log(err)
+    );
   }
 }
 
@@ -64,13 +82,18 @@ export class Teacher extends User {
     };
 
     API.post("classes", newClass, auth)
-      .then((res) => console.log(res))
-      .catch((err) => console.log(err));
+      .then((_) => {
+        successToast("Aula criada!");
+      })
+      .catch((err) => {
+        console.log(err);
+        errorToast("Ops! ocorreu um erro...");
+      });
 
     this.updateClasses();
   }
 
-  updateClasses(): void {
+  updateClasses() {
     const auth = {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("@BCPlanner:token")}`,
@@ -87,6 +110,8 @@ export class Teacher extends User {
         });
       })
       .catch((err) => console.log(err));
+
+    this.updateProfile();
   }
 }
 
@@ -143,5 +168,7 @@ export class Student extends User {
         )
         .catch((err) => console.log(err));
     });
+
+    this.updateProfile();
   }
 }
