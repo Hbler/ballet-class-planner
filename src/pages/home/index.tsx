@@ -6,8 +6,9 @@ import * as yup from "yup";
 import Btn from "../../components/buttons";
 import Header from "../../components/header";
 import Input from "../../components/input";
-import { SelectParent } from "../../components/select";
 import Exercise from "../../models/Exercise";
+
+import { SelectParent } from "../../components/select";
 import { Teacher } from "../../models/User";
 import { ContextUser } from "../../providers/userProvider";
 
@@ -30,11 +31,11 @@ type sequenceForm = {
 };
 
 export default function Home() {
-  const { user, classes } = ContextUser();
+  const { user, classes, forceUpdate } = ContextUser();
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [update, updateState] = useState<{}>();
+  const [updateEx, updateExState] = useState<{}>();
 
-  const forceUpdate = useCallback(() => updateState({}), []);
+  const exUpdate = useCallback(() => updateExState({}), []);
 
   const newClassFormSchema = yup.object().shape({
     className: yup.string().required("Ops! A aula precisa de um nome"),
@@ -126,7 +127,7 @@ export default function Home() {
     });
 
     setExercises([...exerciseList]);
-  }, [classes, update]);
+  }, [classes, updateEx]);
 
   return (
     <>
@@ -178,6 +179,9 @@ export default function Home() {
             />
             <Btn type="submit">Criar</Btn>
           </form>
+          <Btn color="pink" onClick={exUpdate}>
+            Atualizar Exercícios
+          </Btn>
           {exercises.length > 0 && (
             <form onSubmit={sequenceSubmit(submitSequence)}>
               <h3>Adicionar sequencia:</h3>
@@ -220,6 +224,7 @@ export default function Home() {
                 register={sequenceRegister}
                 errors={sequenceErrors?.url?.message}
               />
+              <Btn type="submit">Adicionar</Btn>
             </form>
           )}
         </section>

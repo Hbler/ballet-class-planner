@@ -34,7 +34,9 @@ export default class Exercise {
       },
     };
 
-    API.patch(`exercises/${this.id}`, this.sequences, auth)
+    const update = { sequences: this.sequences };
+
+    API.patch(`exercises/${this.id}`, update, auth)
       .then((res) => {
         console.log(res);
         successToast("Sequencia adicionada!");

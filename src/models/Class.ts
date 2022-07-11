@@ -54,7 +54,7 @@ export default class Class {
     API.get(`classes/${this.id}/exercises`, auth)
       .then((res) => {
         res.data.forEach((ex: Exercise) => {
-          const exercise = new Exercise(ex.name, ex.classId, ex.userId, ex.id);
+          const exercise = new Exercise(ex.name, ex.userId, ex.classId, ex.id);
           this.exercises.push(exercise);
         });
       })

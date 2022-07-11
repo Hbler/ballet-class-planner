@@ -3,6 +3,7 @@ import {
   Dispatch,
   ReactNode,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -38,7 +39,7 @@ interface UserProviderData {
   ) => void;
   logOut: (callback: (route: string) => void) => void;
   signUp: (newUser: newUser, callback: (route: string) => void) => void;
-  checkLocalUser: (savedUser: string) => void;
+  forceUpdate: () => void;
 }
 
 export const UserContext = createContext<UserProviderData>(
@@ -54,6 +55,9 @@ export default function UserProvider({ children }: UserProviderProps) {
   const [token, setToken] = useState("");
   const [user, setUser] = useState({} as User);
   const [classes, setClasses] = useState([] as Class[]);
+  const [update, updateState] = useState<{}>();
+
+  const forceUpdate = useCallback(() => updateState({}), []);
 
   const login = (
     email: string,
@@ -228,7 +232,7 @@ export default function UserProvider({ children }: UserProviderProps) {
     }
 
     if (savedUser && Object.keys(user).length === 0) checkLocalUser(savedUser);
-  }, [user]);
+  }, [user, update]);
 
   return (
     <UserContext.Provider
@@ -241,7 +245,7 @@ export default function UserProvider({ children }: UserProviderProps) {
         login,
         logOut,
         signUp,
-        checkLocalUser,
+        forceUpdate,
       }}
     >
       {children}
